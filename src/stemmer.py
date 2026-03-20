@@ -6,7 +6,18 @@ SUBJECT = ["ni", "u", "a", "tu", "wa", "m"]
 
 TENSE = ["na", "me", "li", "ta", "ka", "nge", "ngeli", "ngali", "sha"]
 
+RELATIVE = ["po", "ko", "mo", "cho", "vyo", "yo", "lo", "zo", "ye"]
+
 OBJECT = ["ni", "ku", "m", "wa", "tu", "ki", "vi", "li", "ya", "ji"]
+
+SUFFIXES = [
+    "ish", "esh",
+    "iw", "ew", "ea",
+    "ik", "ek",
+    "il", "ul","ia",
+    "an",
+    "w"
+]
 
 def remove_prefixes(word):
     original_word = word
@@ -45,17 +56,59 @@ def remove_object(word):
 
     return word
 
+def remove_suffixes(word):
+    suffixes = sorted(SUFFIXES, key=len, reverse=True)
+
+    changed = True
+
+    while changed:
+        changed = False
+
+        for suf in suffixes:
+            if word.endswith(suf):
+                candidate = word[:-len(suf)]
+
+                if len(candidate) >= 3:
+                    word = candidate
+                    changed = True
+                    break
+
+    # 🔥 clean trailing vowels (extra safety)
+    while len(word) > 3 and word[-1] in ["a", "e", "i"]:
+        word = word[:-1]
+
+    return word
+
+def remove_final_vowel(word):
+    if len(word) > 3 and word[-1] in ["a", "e", "i"]:
+        return word[:-1]
+    return word
+
+def remove_relative(word):
+    relatives = sorted(RELATIVE, key=len, reverse=True)
+
+    for rel in relatives:
+        if word.startswith(rel):
+            candidate = word[len(rel):]
+            if len(candidate) >= 3:
+                return candidate
+
+    return word
+
 
 if __name__ == "__main__":
     test_words = [
         "nimewapikia",
-        "tutampiga",
         "atanipigia",
-        "walimpiga"
+        "tendesheana",
+        "walipotendeana"
     ]
 
-    for w in test_words:
-        step1 = remove_prefixes(w)
-        step2 = remove_object(step1)
+for w in test_words:
+    step1 = remove_prefixes(w)
+    step2 = remove_relative(step1)   # 🔥 NEW
+    step3 = remove_object(step2)
+    step4 = remove_final_vowel(step3)
+    step5 = remove_suffixes(step4)
 
-        print(w, "→", step2)
+    print(w, "→", step5)
