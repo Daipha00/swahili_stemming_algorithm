@@ -71,6 +71,29 @@ def remove_prefix_once(word, prefixes, removed_set):
 # =========================
 
 def strip_prefixes(word):
+
+    removed = []
+    changed = True
+
+    while changed:
+        changed = False
+
+        for group in [
+            NEGATION_PREFIXES,
+            SUBJECT_PREFIXES,   # ✅ subject first
+            TENSE_PREFIXES,
+            RELATIVE_PREFIXES,
+            OBJECT_PREFIXES
+        ]:
+            new_word, p = remove_prefix_once(word, group, removed)
+
+            if p:
+                word = new_word
+                removed.append(p)
+                changed = True
+                break  # restart after one removal
+
+    return word, removed
     """
     Iteratively remove prefixes in correct Swahili order
     until no more valid removals are possible.
@@ -80,6 +103,8 @@ def strip_prefixes(word):
     changed = True
 
     while changed:
+        if word :
+            break
         changed = False
 
         for group in [

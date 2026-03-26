@@ -1,5 +1,5 @@
 # =========================
-# SUFFIX LIST (FROM YOUR TABLE)
+# SUFFIX LISTS (FROM YOUR DATA)
 # =========================
 
 DERIVATIONAL_SUFFIXES = [
@@ -16,30 +16,23 @@ DERIVATIONAL_SUFFIXES = [
     "ek",
     "sh",
     "z",
-    "w",
-    "i",
-    "a"
+    "w"
 ]
 
-# =========================
-# SETTINGS
-# =========================
+FINAL_VOWELS = ["a", "e", "i"]
 
 MIN_ROOT_LENGTH = 3
 
 
 # =========================
-# REMOVE ONE SUFFIX
+# REMOVE DERIVATIONAL SUFFIX
 # =========================
 
-def remove_suffix_once(word, removed_set):
+def remove_derivational_suffix(word, removed):
 
-    # =========================
-    # 1. DERIVATIONAL SUFFIXES FIRST
-    # =========================
     for suffix in sorted(DERIVATIONAL_SUFFIXES, key=len, reverse=True):
 
-        if suffix in removed_set:
+        if suffix in removed:
             continue
 
         if word.endswith(suffix):
@@ -49,49 +42,42 @@ def remove_suffix_once(word, removed_set):
             if len(new_word) < MIN_ROOT_LENGTH:
                 continue
 
+            # protect real stems
+            if new_word.endswith(("mb", "nd", "ng", "ch", "sh")):
+                return new_word, suffix
+
+            # prevent over-cutting like kimbi → kimb ❌
+            if new_word.endswith(("bi", "li", "zi")):
+                continue
+
             return new_word, suffix
-
-    # =========================
-    # 2. FINAL VOWEL (STRICT CONTROL)
-    # =========================
-    if word.endswith(("a", "i", "e")):
-
-        # do NOT remove vowel twice
-        if any(v in removed_set for v in ["a", "i", "e"]):
-            return word, None
-
-        new_word = word[:-1]
-
-        # protect short roots
-        if len(new_word) < MIN_ROOT_LENGTH:
-            return word, None
-
-        # protect roots ending with vowel pattern (like "kimbi")
-        if new_word.endswith(("bi", "ki", "li", "zi")):
-            return word, None
-
-        return new_word, word[-1]
 
     return word, None
 
 
+# =========================
+# REMOVE FINAL VOWEL (STRICT)
+# =========================
 
+def remove_final_vowel(word, removed):
 
-    for suffix in sorted(DERIVATIONAL_SUFFIXES, key=len, reverse=True):
+    if word.endswith(tuple(FINAL_VOWELS)):
 
-        # avoid removing same suffix twice
-        if suffix in removed_set:
-            continue
+        # do not remove twice
+        if any(v in removed for v in FINAL_VOWELS):
+            return word, None
 
-        if word.endswith(suffix):
+        new_word = word[:-1]
 
-            new_word = word[:-len(suffix)]
+        if len(new_word) < MIN_ROOT_LENGTH:
+            return word, None
 
-            # protect root length
-            if len(new_word) < MIN_ROOT_LENGTH:
-                continue
+        # 🔥 VERY IMPORTANT PROTECTION
+        # do NOT break valid Swahili roots
+        # if new_word.endswith(("bi", "li", "zi")):
+        #     return word, None
 
-            return new_word, suffix
+        return new_word, word[-1]
 
     return word, None
 
@@ -108,7 +94,17 @@ def strip_suffixes(word):
     while changed:
         changed = False
 
-        new_word, s = remove_suffix_once(word, removed)
+        # 1️⃣ DERIVATIONAL FIRST
+        new_word, s = remove_derivational_suffix(word, removed)
+
+        if s:
+            word = new_word
+            removed.append(s)
+            changed = True
+            continue
+
+        # 2️⃣ FINAL VOWEL LAST
+        new_word, s = remove_final_vowel(word, removed)
 
         if s:
             word = new_word
