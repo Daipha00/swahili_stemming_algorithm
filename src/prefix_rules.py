@@ -1,3 +1,4 @@
+from root_rules import protect_root
 # =========================
 # PREFIX LISTS
 # =========================
@@ -38,12 +39,48 @@ MIN_ROOT_LENGTH = 3
 # =========================
 
 def remove_prefix_once(word, prefixes, removed_set):
-    """
-    Remove ONE prefix safely:
-    - avoid duplicates
-    - protect root
-    - avoid removing inside stem (tu, ji, etc.)
-    """
+
+    for prefix in sorted(prefixes, key=len, reverse=True):
+
+        if prefix in removed_set:
+            continue
+
+        if word.startswith(prefix):
+            new_word = word[len(prefix):]
+
+            # ROOT PROTECTION (length)
+            if len(new_word) < MIN_ROOT_LENGTH:
+                continue
+
+            # 🔥 NEW: STOP OVER-STRIPPING
+            if len(removed_set) >= 3:
+                continue
+
+            return new_word, prefix
+
+    return word, None
+
+    from root_rules import protect_root  # import here (safe)
+
+    for prefix in sorted(prefixes, key=len, reverse=True):
+
+        # avoid removing same prefix twice
+        if prefix in removed_set:
+            continue
+
+        if word.startswith(prefix):
+            new_word = word[len(prefix):]
+
+            # ROOT PROTECTION: do not destroy word
+            if len(new_word) < MIN_ROOT_LENGTH:
+                continue
+
+            if len(removed_set) >= 3:
+               continue
+
+            return new_word, prefix
+
+    return word, None
 
     for prefix in sorted(prefixes, key=len, reverse=True):
 
@@ -70,6 +107,11 @@ def remove_prefix_once(word, prefixes, removed_set):
 # MAIN FUNCTION
 # =========================
 
+
+
+
+
+
 def strip_prefixes(word):
 
     removed = []
@@ -94,32 +136,4 @@ def strip_prefixes(word):
                 break  # restart after one removal
 
     return word, removed
-    """
-    Iteratively remove prefixes in correct Swahili order
-    until no more valid removals are possible.
-    """
-
-    removed = []
-    changed = True
-
-    while changed:
-        if word :
-            break
-        changed = False
-
-        for group in [
-            NEGATION_PREFIXES,
-            SUBJECT_PREFIXES,
-            TENSE_PREFIXES,
-            RELATIVE_PREFIXES,  # MUST come before OBJECT
-            OBJECT_PREFIXES
-        ]:
-            new_word, p = remove_prefix_once(word, group, removed)
-
-            if p:
-                word = new_word
-                removed.append(p)
-                changed = True
-                break  # restart loop after each removal
-
-    return word, removed
+  
