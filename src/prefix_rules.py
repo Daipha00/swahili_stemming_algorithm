@@ -6,7 +6,7 @@ NEGATION_PREFIXES = ["ha", "si", "hu"]
 
 SUBJECT_PREFIXES = [
     "ni", "tu", "u", "a", "wa",
-    "ki", "i", "li", "ya", "vi", "zi"
+    "ki", "i", "li", "ya", "vi", "zi", "ja"
 ]
 
 TENSE_PREFIXES = [
