@@ -1,7 +1,3 @@
-# =========================
-# SUFFIX LISTS (FROM YOUR DATA)
-# =========================
-
 DERIVATIONAL_SUFFIXES = [
     "liw", "iw",
     "ish", "esh",
@@ -24,10 +20,6 @@ FINAL_VOWELS = ["a", "e", "i"]
 MIN_ROOT_LENGTH = 3
 
 
-# =========================
-# REMOVE DERIVATIONAL SUFFIX
-# =========================
-
 def remove_derivational_suffix(word, removed):
 
     for suffix in sorted(DERIVATIONAL_SUFFIXES, key=len, reverse=True):
@@ -42,11 +34,10 @@ def remove_derivational_suffix(word, removed):
             if len(new_word) < MIN_ROOT_LENGTH:
                 continue
 
-            # protect real stems
+           
             if new_word.endswith(("mb", "nd", "ng", "ch", "sh")):
                 return new_word, suffix
 
-            # prevent over-cutting like kimbi → kimb ❌
             if new_word.endswith(("bi", "li", "zi")):
                 continue
 
@@ -55,15 +46,11 @@ def remove_derivational_suffix(word, removed):
     return word, None
 
 
-# =========================
-# REMOVE FINAL VOWEL (STRICT)
-# =========================
-
 def remove_final_vowel(word, removed):
 
     if word.endswith(tuple(FINAL_VOWELS)):
 
-        # do not remove twice
+       
         if any(v in removed for v in FINAL_VOWELS):
             return word, None
 
@@ -72,19 +59,9 @@ def remove_final_vowel(word, removed):
         if len(new_word) < MIN_ROOT_LENGTH:
             return word, None
 
-        # 🔥 VERY IMPORTANT PROTECTION
-        # do NOT break valid Swahili roots
-        # if new_word.endswith(("bi", "li", "zi")):
-        #     return word, None
-
         return new_word, word[-1]
 
     return word, None
-
-
-# =========================
-# MAIN FUNCTION
-# =========================
 
 def strip_suffixes(word):
 
@@ -94,7 +71,6 @@ def strip_suffixes(word):
     while changed:
         changed = False
 
-        # 1️⃣ DERIVATIONAL FIRST
         new_word, s = remove_derivational_suffix(word, removed)
 
         if s:
@@ -103,7 +79,6 @@ def strip_suffixes(word):
             changed = True
             continue
 
-        # 2️⃣ FINAL VOWEL LAST
         new_word, s = remove_final_vowel(word, removed)
 
         if s:
